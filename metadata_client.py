@@ -1,6 +1,6 @@
 __author__ = 'Paul Sarando'
 
-import config.ncbi_sra_submit_properties
+import config.emblebi_ena_submit_properties
 from xml.sax.saxutils import escape, unescape
 
 import os
@@ -138,7 +138,7 @@ class MetadataClient:
         #self.bio_sample_reserved_attributes = config.ncbi_sra_submit_properties.bio_sample_reserved_attributes
         #self.bio_sample_dup_attributes = config.ncbi_sra_submit_properties.bio_sample_dup_attributes
         #self.library_reserved_attributes = config.ncbi_sra_submit_properties.library_reserved_attributes
-        self.compressed_content_types = config.ncbi_sra_submit_properties.compressed_content_types
+        self.compressed_content_types = config.emblebi_ena_submit_properties.compressed_content_types
 
     def get_metadata(self, json_file):
         with open(json_file) as file:

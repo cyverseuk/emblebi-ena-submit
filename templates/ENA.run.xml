@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:py="http://genshi.edgewall.org/" xsi:noNamespaceSchemaLocation="ftp://ftp.sra.ebi.ac.uk/meta/xsd/sra_1_5/SRA.run.xsd">
-  <py:for each="i, run in bundle.runs">
-    <RUN alias="${submission_id}:assay:EXP${i}" broker_name="TGAC" center_name="TGAC">
-        <EXPERIMENT_REF refname="${submission_id}:generic_assay:a_${submission_id}:EXP${i}"/>
+  <py:for each="i, run in enumerate(metadata.bundle.runs)">
+    <RUN alias="${metadata.submission_id}:assay:EXP${i}" broker_name="TGAC" center_name="TGAC">
+        <EXPERIMENT_REF refname="${metadata.submission_id}:generic_assay:a_${metadata.submission_id}:EXP${i}"/>
         <DATA_BLOCK>
-          <FILES py:for="file in run.files">
-              <FILE file_path="${file.filename}" md5="${file.md5}" checksum_method="md5" filetype="fastq"/>
+          <FILES>
+              <FILE py:for="file in run.files" file_path="${file.filename}" md5="${file.md5}" checksum_method="md5" filetype="fastq"/>
           </FILES>
         </DATA_BLOCK>
-    <RUN>
+    </RUN>
   </py:for>
 </RUN_SET>

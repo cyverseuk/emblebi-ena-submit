@@ -14,9 +14,8 @@ import os
 import shutil
 
 class EnaDataFileUploader:
-    def __init__(self, ascp_cmd, password, ena_user, ena_host, ena_sumbit_path):
+    def __init__(self, ascp_cmd, ena_user, ena_host, ena_sumbit_path):
         self.ascp_cmd = ascp_cmd
-        self.password = password
         self.upload_dest = '{0}@{1}:{2}'.format(ena_user, ena_host, ena_sumbit_path)
 
     def upload_datafiles(self, submit_dir, input_paths):
@@ -88,16 +87,16 @@ parser.add_argument('-sub', '--submission-xml', dest = 'submission_xml',
                     help = 'specify the path to the ENA Submission metadata file.')
 parser.add_argument('-pro', '--project-xml', dest = 'project_xml',
                     required = True,
-                    help = 'specify the path to the ENA Project metadata file.'
+                    help = 'specify the path to the ENA Project metadata file.')
 parser.add_argument('-sam', '--sample-xml', dest = 'sample_xml',
                     required = True,
-                    help = 'specify the path to the ENA Sample metadata file.'
+                    help = 'specify the path to the ENA Sample metadata file.')
 parser.add_argument('-exp', '--experiment-xml', dest = 'experiment_xml',
                     required = True,
-                    help = 'specify the path to the ENA Experiment metadata file.'
+                    help = 'specify the path to the ENA Experiment metadata file.')
 parser.add_argument('-run', '--run-xml', dest = 'run_xml',
                     required = True,
-                    help = 'specify the path to the ENA Run metadata file.'
+                    help = 'specify the path to the ENA Run metadata file.')
 parser.add_argument('-v', '--validate-metadata-only', dest = 'validate_only', action='store_true',
                     help = 'when included, no data will be submitted and only the metadata folder'
                            ' metadata file will be validated.')
@@ -128,30 +127,11 @@ if args.submit_mode != 'ADD' and not args.project_accession:
     raise Exception("Could not find a submission ID to use for project update.")
 
 # Generate submission.xml in the submission dir
-metadata_template = loader.load('ENA.run.xml')
+metadata_template = loader.load('/home/davey/git/emblebi-ena-submit/templates/ENA.run.xml')
 submission_path = os.path.join(submit_dir, 'run.xml')
-stream = metadata_template.generate(metadata=metadata, submit_mode=args.submit_mode)
-with open(submission_path, 'w') as f:
-    stream.render(method='xml', out=f)
-
-# Validate generated XML
-#xml_validator = EnaXmlValidator(config.emblebi_ena_submit_properties.schemas_dir,
-#                                config.emblebi_ena_submit_properties.submission_schema_path,
-#                                config.emblebi_ena_submit_properties.study_schema_path,
-#                                config.emblebi_ena_submit_properties.sample_schema_path,
-#                                config.emblebi_ena_submit_properties.experiment_schema_path,
-#                                config.emblebi_ena_submit_properties.run_schema_path)
-#xml_validator.validate_ena_xml(submission_path)
-
-if args.validate_only or not args.input_dir:
-    print "Only validated metadata, no data was submitted to the NCBI SRA."
-else:
-    uploader = EnaDataFileUploader(config.ncbi_sra_submit_properties.ascp_cmd,
-                                  args.password,
-                                  config.ncbi_sra_submit_properties.ena_user,
-                                  config.ncbi_sra_submit_properties.ena_host,
-                                  config.ncbi_sra_submit_properties.ena_sumbit_path)
-    test_metadata = {"bundle": {
+test_metadata = {
+    "submission_id": "a5sfd5asfd5asfd",
+    "bundle": {
         "runs": [
             {
                 "files": [
@@ -168,7 +148,29 @@ else:
                 ]
             }
         ]
-    }}
+    }
+}
+
+stream = metadata_template.generate(metadata=test_metadata, submit_mode=args.submit_mode)
+with open(submission_path, 'w') as f:
+    stream.render(method='xml', out=f)
+
+# Validate generated XML
+#xml_validator = EnaXmlValidator(config.emblebi_ena_submit_properties.schemas_dir,
+#                                config.emblebi_ena_submit_properties.submission_schema_path,
+#                                config.emblebi_ena_submit_properties.study_schema_path,
+#                                config.emblebi_ena_submit_properties.sample_schema_path,
+#                                config.emblebi_ena_submit_properties.experiment_schema_path,
+#                                config.emblebi_ena_submit_properties.run_schema_path)
+#xml_validator.validate_ena_xml(submission_path)
+
+if args.validate_only or not args.input_dir:
+    print("Only validated metadata, no data was submitted to the NCBI SRA.")
+else:
+    uploader = EnaDataFileUploader(config.emblebi_ena_submit_properties.ascp_cmd,
+                                  config.emblebi_ena_submit_properties.ena_user,
+                                  config.emblebi_ena_submit_properties.ena_host,
+                                  config.emblebi_ena_submit_properties.ena_sumbit_path)
 
     # Build the list of submission input file paths for the uploader
     input_paths = metadata_client.get_bio_project_file_paths(test_metadata, args.input_dir)
